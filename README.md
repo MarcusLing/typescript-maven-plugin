@@ -21,6 +21,7 @@ To use the plugin in maven you need to follow these steps:
         &lt;configuration&gt;
         	&lt;sourceDirectory&gt;src/main/ts&lt;/sourceDirectory&gt;
         	&lt;targetDirectory&gt;target/ts&lt;/targetDirectory&gt;
+        	&lt;module&gt;amd/ts&lt;/module&gt;&lt;!-- 'amd' or 'commonjs' --&gt;
         &lt;/configuration&gt;        
       &lt;/plugin&gt;
 </pre>

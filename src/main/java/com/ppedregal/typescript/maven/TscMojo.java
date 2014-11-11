@@ -127,6 +127,14 @@ public class TscMojo
      * @parameter expression="${ts.targetVersion}" default-value="ES3"
      */
     private String targetVersion;
+    
+    /**
+     * Set the module format for Type Script compilation output.
+     * Acceptable values are "amd" or "commonjs".
+     * 
+     * @parameter expression="${ts.module}" default-value="amd"
+     */
+    private String module;
 
     /**
      * Set the executable command of tsc program.
@@ -350,6 +358,12 @@ public class TscMojo
                 argv.put(i++, argv, "--target");
                 argv.put(i++, argv, targetVersion);
             }
+            
+            if (module != null) {
+                getLog().info("Setting module format to " + module);
+                argv.put(i++, argv, "--module");
+                argv.put(i++, argv, module);
+            }
 
             for (String s:args){
                 argv.put(i++, argv, s);
@@ -418,6 +432,12 @@ public class TscMojo
                 arguments.add(targetVersion);
             }
 
+            if (module != null) {
+                getLog().info("Setting module format to " + module);
+                arguments.add("--module");
+                arguments.add(module);
+            }
+            
             for (String arg : args) {
                 arguments.add(arg);
             }
