@@ -18,6 +18,7 @@ package com.ppedregal.typescript.maven;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -333,9 +334,6 @@ public class TscMojo
                 argv.put(i++, argv, "--nolib");
             }
             if (libDTS!=null && libDTS.exists()) {
-                if (!watching) {
-                    getLog().info("Adding standard library file " + libDTS);
-                }
                 argv.put(i++, argv, libDTS.getAbsolutePath());
 
             }
@@ -344,9 +342,6 @@ public class TscMojo
                 if (libFiles != null) {
                     for (File libFile : libFiles) {
                         if (libFile.getName().endsWith(".d.ts") && libFile.exists()) {
-                            if (!watching) {
-                                getLog().info("Adding library file " + libFile);
-                            }
                             argv.put(i++, argv, libFile.getAbsolutePath());
                         }
                     }
@@ -354,13 +349,11 @@ public class TscMojo
             }
 
             if (targetVersion != null) {
-                getLog().info("Setting target version to " + targetVersion);
                 argv.put(i++, argv, "--target");
                 argv.put(i++, argv, targetVersion);
             }
             
             if (module != null) {
-                getLog().info("Setting module format to " + module);
                 argv.put(i++, argv, "--module");
                 argv.put(i++, argv, module);
             }
@@ -373,6 +366,8 @@ public class TscMojo
 
             NativeObject mainModule = (NativeObject)proc.get("mainModule");
             mainModule.defineProperty("filename", new File("tsc.js").getAbsolutePath(),ScriptableObject.READONLY);
+            
+            getLog().info("Using Rhino JS Engine to run command: " + nativeArrayToString(argv));
 
             tscScript.exec(ctx,globalScope);
         } catch (JavaScriptException e){
@@ -397,6 +392,18 @@ public class TscMojo
             org.mozilla.javascript.Context.exit();
         }
     }
+    
+    /**
+     * Format a native array of strings into one space separated string.
+     */
+    private static String nativeArrayToString(NativeArray narray) {
+        StringBuilder sb = new StringBuilder();
+        for (Object narray1 : narray) {
+            sb.append(narray1.toString());
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
 
     private boolean useBinary(String[] args) throws MojoExecutionException {
         if (useTsc) {
@@ -417,9 +424,6 @@ public class TscMojo
                     for (File libFile : libFiles) {
                         if (libFile.getName().endsWith(".d.ts") && libFile.exists()) {
                             String path = libFile.getAbsolutePath();
-                            if (!watching) {
-                                getLog().info("Adding library file " + libFile);
-                            }
                             arguments.add(path);
                         }
                     }
@@ -427,20 +431,18 @@ public class TscMojo
             }
 
             if (targetVersion != null) {
-                getLog().info("Setting target version to " + targetVersion);
                 arguments.add("--target");
                 arguments.add(targetVersion);
             }
 
             if (module != null) {
-                getLog().info("Setting module format to " + module);
                 arguments.add("--module");
                 arguments.add(module);
             }
             
-            for (String arg : args) {
-                arguments.add(arg);
-            }
+            arguments.addAll(Arrays.asList(args));
+            
+            getLog().info("Using external nodejs to run command: " + stringListToString(arguments));
 
             getLog().debug("About to execute command: " + arguments);
             ProcessBuilder builder = new ProcessBuilder(arguments);
@@ -470,6 +472,18 @@ public class TscMojo
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Format a list of strings into one space separated string.
+     */
+    private static String stringListToString(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        for (Object narray1 : list) {
+            sb.append(narray1.toString());
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 
     private void redirectOutput(InputStream is, boolean error) throws IOException {
