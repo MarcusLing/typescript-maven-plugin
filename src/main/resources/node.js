@@ -14,6 +14,9 @@ var process = {};
 		status = status || 0;
 		throw new com.ppedregal.typescript.maven.ProcessExit(status);
 	}
+    function cwd() {
+      return java.lang.System.getProperty("user.dir");      
+    }
 	process = {
 		stdout: {
 			write:function(o){
@@ -42,7 +45,8 @@ var process = {};
 		exit: exit,
 		mainModule: {
 			filename:""
-		}
+		},
+        cwd: cwd
 	};
 })();
 var console = {};

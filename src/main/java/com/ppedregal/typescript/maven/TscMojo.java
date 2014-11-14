@@ -233,17 +233,16 @@ public class TscMojo
             }
             for (File file : files) {
                 try {
-                    String path = file.getPath().substring(sourceDirectory.getPath().length());
-                    String sourcePath = path;
-                    String targetPath = FilenameUtils.removeExtension(path) + ".js";
+                    String sourcePath = file.getPath().substring(sourceDirectory.getPath().length());
+                    String targetPath = FilenameUtils.removeExtension(sourcePath) + ".js";
                     File sourceFile = new File(sourceDirectory, sourcePath).getAbsoluteFile();
                     File targetFile = new File(targetDirectory, targetPath).getAbsoluteFile();
                     if (!targetFile.exists() || !checkTimestamp || sourceFile.lastModified() > targetFile.lastModified()) {
                         String sourceFilePath = sourceFile.getPath();
                         getLog().info(String.format("Compiling: %s", sourceFilePath));
-                        String generatePath = targetFile.getPath();
-                        tsc("--out", generatePath, sourceFilePath);
-                        getLog().info(String.format("Generated: %s", generatePath));
+                        String generatePath = targetFile.getParentFile().getPath();
+                        tsc("--outDir", generatePath, sourceFilePath);
+                        getLog().info(String.format("Generated: %s", targetFile));
                         compiledFiles++;
                     }
                 } catch (TscInvocationException e) {
@@ -304,7 +303,7 @@ public class TscMojo
     }
 
     private void tsc(String...args) throws TscInvocationException, MojoExecutionException {
-        if (useBinary(args)) {
+        if (useTscBinary(args)) {
             return;
         }
 
@@ -385,7 +384,7 @@ public class TscMojo
         return sb.toString();
     }
 
-    private boolean useBinary(String[] args) throws MojoExecutionException {
+    private boolean useTscBinary(String[] args) throws MojoExecutionException {
         if (useTsc) {
 
             // lets try execute the 'tsc' executable directly
