@@ -106,7 +106,7 @@ public class TscMojo
      *
      * @parameter expression="${ts.nolib}"
      */
-    private boolean noStandardLib = true;
+    private boolean noStandardLib = false;
 
     /**
      * The amount of millis to wait before polling the source files for changes
@@ -146,6 +146,7 @@ public class TscMojo
 
     private Script nodeScript;
     private Script tscScript;
+    private Script fileWedgeScript;
     private ScriptableObject globalScope;
     private boolean watching;
 
@@ -263,6 +264,7 @@ public class TscMojo
                     if (getLog().isDebugEnabled()) {
                         getLog().debug(e);
                     }
+                    throw new MojoExecutionException(e.getMessage(), e);
                 }
             }
             if (compiledFiles == 0) {
@@ -286,6 +288,7 @@ public class TscMojo
             require.setModuleScriptProvider(new SoftCachingModuleScriptProvider(new ClasspathModuleSourceProvider()));
             require.createRequire(ctx, globalScope).install(globalScope);
             nodeScript = compile(ctx,"node.js");
+            fileWedgeScript = compile(ctx, "filewedge.js");
             tscScript = compile(ctx,"tsc.js");
         } finally {
             Context.exit();
@@ -323,7 +326,8 @@ public class TscMojo
             Context ctx = Context.getCurrentContext();
 
             nodeScript.exec(ctx, globalScope);
-
+            fileWedgeScript.exec(ctx, globalScope);
+            
             NativeObject proc = (NativeObject)globalScope.get("process");
             NativeArray argv = (NativeArray)proc.get("argv");
             argv.defineProperty("length", 0, ScriptableObject.EMPTY);
@@ -365,7 +369,7 @@ public class TscMojo
             proc.defineProperty("encoding", encoding, ScriptableObject.READONLY);
 
             NativeObject mainModule = (NativeObject)proc.get("mainModule");
-            mainModule.defineProperty("filename", new File("tsc.js").getAbsolutePath(),ScriptableObject.READONLY);
+            mainModule.defineProperty("filename", "___classloader_resource___/tsc.js", ScriptableObject.READONLY);
             
             getLog().info("Using Rhino JS Engine to run command: " + nativeArrayToString(argv));
 
@@ -377,13 +381,13 @@ public class TscMojo
                 if (o instanceof ProcessExit){
                     ProcessExit pe = (ProcessExit)o;
                     if (pe.getStatus()!=0){
-                        throw new TscInvocationException("Process Error: "+pe.getStatus());
+                        throw new TscInvocationException("Process Error: "+pe.getStatus(), e);
                     }
                 } else {
-                    throw new TscInvocationException("Javascript Error",e);
+                    throw new TscInvocationException("JavaScript Error: " + e.details() +  "\nJS stack:\n"+e.getScriptStackTrace(), e);
                 }
             } else {
-                throw new TscInvocationException("Javascript Error",e);
+                throw new TscInvocationException("JavaScript Error: " + e.details() +  "\nJS stack:\n"+e.getScriptStackTrace(), e);
             }
         } catch (RhinoException e){
             getLog().error(e.getMessage());

@@ -56,14 +56,14 @@ exports.readFileSync=function(path,enc){
 	return {
 		"0":0,
 		"1":0,
+        length: buffer.length(),
 		toString:function(){
 			return new String(buffer.toString());
 		}
 	};
 };
 exports.writeFileSync=function(path,data,enc){
-        process.stdout.writeln(data)
-	log("writeFileSync",argv(arguments));
+//	log("writeFileSync",argv(arguments));
 	enc=enc||process.encoding||"utf-8";
 	var f = javafile(path),
 		writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(f),enc));
@@ -79,6 +79,7 @@ exports.unlinkSync=function(path){
 	return javafile(path)["delete"]();
 };
 exports.existsSync=function(path){
+//  log("existsSync",argv(arguments));
 	return javafile(path).exists();
 };
 exports.statSync=function(path){
@@ -94,13 +95,19 @@ exports.mkdirSync=function(path){
 	return javafile(path).mkdir();
 };
 exports.openSync=function(path,flags,mode){
+//  log("openSync",argv(arguments));
 	var enc = process.encoding||"utf-8",
 		f = javafile(path),
 		writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(f),enc));
 	return writer;
 };
 exports.writeSync=function(fd,buffer,offset,len,pos){
+//  log("writeSync",argv(arguments));
+  if (fd === 1) {
+    process.stdout.write(buffer);
+  } else { 
     fd.write(new String(buffer.data, buffer.encoding));
+  }
 };
 exports.closeSync=function(fd){
 	fd.close();
