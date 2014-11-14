@@ -14799,7 +14799,6 @@ var ts;
                     onError(e.message);
             }
         }
-        sys.write("**** " + sys.getExecutingFilePath() );
         return {
             getSourceFile: getSourceFile,
             getDefaultLibFilename: function () { return ts.combinePaths(ts.getDirectoryPath(ts.normalizePath(sys.getExecutingFilePath())), "lib.d.ts"); },
