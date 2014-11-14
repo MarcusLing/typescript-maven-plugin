@@ -61,19 +61,6 @@ public class TscMojo
     private File sourceDirectory;
 
     /**
-     * Source directory for .d.ts source files
-     * @parameter expression="${ts.libraryDirectory}" default-value="src/main/d.ts"
-     */
-    private File libraryDirectory;
-
-    /**
-     * The lib.d.ts file used to pass into the compiler if required
-     *
-     * @parameter expression="${ts.libDTS}" default-value="src/main/tsc/lib.d.ts"
-     */
-    private File libDTS;
-
-    /**
      * Encoding for files
      * @parameter expression="${project.build.sourceEncoding}
      */
@@ -334,22 +321,11 @@ public class TscMojo
             int i = 0;
             argv.put(i++, argv, "node");
             argv.put(i++, argv, "tsc.js");
+            
+            
+            
             if (noStandardLib) {
                 argv.put(i++, argv, "--nolib");
-            }
-            if (libDTS!=null && libDTS.exists()) {
-                argv.put(i++, argv, libDTS.getAbsolutePath());
-
-            }
-            if (libraryDirectory!=null && libraryDirectory.exists()) {
-                File[] libFiles = libraryDirectory.listFiles();
-                if (libFiles != null) {
-                    for (File libFile : libFiles) {
-                        if (libFile.getName().endsWith(".d.ts") && libFile.exists()) {
-                            argv.put(i++, argv, libFile.getAbsolutePath());
-                        }
-                    }
-                }
             }
 
             if (targetVersion != null) {
@@ -420,18 +396,6 @@ public class TscMojo
             }
             else {
                 arguments.add("tsc");
-            }
-
-            if (libraryDirectory.exists()) {
-                File[] libFiles = libraryDirectory.listFiles();
-                if (libFiles != null) {
-                    for (File libFile : libFiles) {
-                        if (libFile.getName().endsWith(".d.ts") && libFile.exists()) {
-                            String path = libFile.getAbsolutePath();
-                            arguments.add(path);
-                        }
-                    }
-                }
             }
 
             if (targetVersion != null) {
