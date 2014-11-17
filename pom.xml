@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.ppedregal.typescript</groupId>
+  <groupId>com.simonzone.typescript</groupId>
   <artifactId>typescript-maven-plugin</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
@@ -12,15 +12,15 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven-version>2.0.9</maven-version>
+    <maven-version>2.2.1</maven-version>
   </properties>
-	
-  <distributionManagement>
+
+<!--  <distributionManagement>
     <repository>
       <id>github:ppedregal@gmail</id>
       <url>https://raw.github.com/ppedregal/typescript-maven-plugin/master/repo</url>
     </repository>
-  </distributionManagement>
+  </distributionManagement>-->
 
   <dependencies>
     <dependency>
