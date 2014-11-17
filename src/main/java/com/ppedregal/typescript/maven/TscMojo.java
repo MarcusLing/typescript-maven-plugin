@@ -44,8 +44,7 @@ import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptPr
  *
  * @phase compile
  */
-public class TscMojo
-        extends AbstractMojo
+public class TscMojo extends AbstractMojo
 {
     /**
      * Output directory for .js compiled files
@@ -125,6 +124,20 @@ public class TscMojo
     private String module;
 
     /**
+     * Remove comments in the output JS.
+     * 
+     * @parameter expression="${ts.removeComments}" default-value="false"
+     */
+    private boolean removeComments = false;
+    
+    /**
+     * Warning about expression which have a default 'any' type.
+     * 
+     * @parameter expression="${ts.noImplicitAny}" default-value="false"
+     */
+    private boolean noImplicitAny = false;
+    
+    /**
      * Set the executable command of tsc program.
      *
      * @parameter expression="${ts.tscExecutable}" default-value="tsc"
@@ -137,9 +150,7 @@ public class TscMojo
     private ScriptableObject globalScope;
     private boolean watching;
 
-    public void execute()
-            throws MojoExecutionException
-    {
+    public void execute() throws MojoExecutionException {
         sourceDirectory.mkdirs();
         targetDirectory.mkdirs();
 
@@ -301,7 +312,34 @@ public class TscMojo
             stream = null;
         }
     }
+    
+    private List<String> optionArguments() {
+        List<String> options = new ArrayList<String>();
+        
+        if (noStandardLib) {
+            options.add("--nolib");
+        }
+        
+        if (removeComments) {
+            options.add("--removeComments");
+        }
+        
+        if (noImplicitAny) {
+            options.add("--noImplicitAny");
+        }
+        
+        if (targetVersion != null) {
+            options.add("--target");
+            options.add(targetVersion);
+        }
 
+        if (module != null) {
+            options.add("--module");
+            options.add(module);
+        }
+        return options;
+    }    
+        
     private void tsc(String...args) throws TscInvocationException, MojoExecutionException {
         if (useTscBinary(args)) {
             return;
@@ -321,20 +359,8 @@ public class TscMojo
             argv.put(i++, argv, "node");
             argv.put(i++, argv, "tsc.js");
             
-            
-            
-            if (noStandardLib) {
-                argv.put(i++, argv, "--nolib");
-            }
-
-            if (targetVersion != null) {
-                argv.put(i++, argv, "--target");
-                argv.put(i++, argv, targetVersion);
-            }
-            
-            if (module != null) {
-                argv.put(i++, argv, "--module");
-                argv.put(i++, argv, module);
+            for (String option : optionArguments()) {
+                argv.put(i++, argv, option);
             }
 
             for (String s:args){
@@ -396,17 +422,7 @@ public class TscMojo
             else {
                 arguments.add("tsc");
             }
-
-            if (targetVersion != null) {
-                arguments.add("--target");
-                arguments.add(targetVersion);
-            }
-
-            if (module != null) {
-                arguments.add("--module");
-                arguments.add(module);
-            }
-            
+            arguments.addAll(optionArguments());
             arguments.addAll(Arrays.asList(args));
             
             getLog().info("Using external nodejs to run command: " + stringListToString(arguments));
@@ -493,6 +509,14 @@ public class TscMojo
         this.sourceDirectory = sourceDirectory;
     }
 
+    public File getTargetFile() {
+        return targetFile;
+    }
+    
+    public void setTargetFile(File targetFile) {
+        this.targetFile = targetFile;
+    }
+    
     public String getEncoding() {
         return encoding;
     }
@@ -501,6 +525,38 @@ public class TscMojo
         this.encoding = encoding;
     }
 
+    public boolean getNoStandardLib() {
+        return noStandardLib;
+    }
+    
+    public void setNoStandardLib(boolean noStandardLib) {
+        this.noStandardLib = noStandardLib;
+    }
+    
+    public String getModule() {
+        return module;
+    }
+    
+    public void setModule(String module) {
+        this.module = module;
+    }
+    
+    public boolean getRemoveComments() {
+        return removeComments;
+    }
+    
+    public void setRemoveComments(boolean removeComments) {
+        this.removeComments = removeComments;
+    }
+    
+    public boolean getNoImplicitAny() {
+        return noImplicitAny;
+    }
+    
+    public void setNoImplicitAny(boolean noImplicitAny) {
+        this.noImplicitAny = noImplicitAny;
+    }
+    
     public String getTscExecutable() {return tscExecutable;}
     public void setTscExecutable(String tscExecutable) {this.tscExecutable = tscExecutable;}
 
