@@ -145,6 +145,29 @@ public class TscMojo extends AbstractMojo
     private boolean declaration = false;
     
     /**
+     * Set to true to generate source maps.
+     *
+     * @parameter expression="${ts.sourceMap}" default-value=false
+     */
+    private boolean sourceMap = false;
+
+    /**
+     * Location where the debugger should locate TypeScript files instead
+     * of source locations.
+     *
+     * @parameter expression="${ts.sourceRoot}" default-value=null
+     */
+    private String sourceRoot = null;
+    
+    /**
+     * Location where the debugger should locate map files instead of
+     * generated locations.
+     * 
+     * @parameter expression="${ts.mapRoot}" default-value=null
+     */
+    private String mapRoot = null;
+    
+    /**
      * Set the executable command of tsc program.
      *
      * @parameter expression="${ts.tscExecutable}" default-value="tsc"
@@ -337,6 +360,18 @@ public class TscMojo extends AbstractMojo
         
         if (noImplicitAny) {
             options.add("--noImplicitAny");
+        }
+        
+        if (sourceMap) {
+            options.add("--sourceMap");
+            if (sourceRoot != null) {
+                options.add("--sourceRoot");
+                options.add(sourceRoot);
+            }
+            if (mapRoot != null) {
+                options.add("--mapRoot");
+                options.add(mapRoot);
+            }
         }
         
         if (targetVersion != null) {
@@ -574,6 +609,30 @@ public class TscMojo extends AbstractMojo
 
     public void setDeclaration(boolean declaration) {
         this.declaration = declaration;
+    }
+    
+    public boolean getSourceMap() {
+        return sourceMap;
+    }
+    
+    public void setSourceMap(boolean sourceMap) {
+        this.sourceMap = sourceMap;
+    }
+    
+    public String getSourceRoot() {
+        return sourceRoot;
+    }
+    
+    public void setSourceRoot(String sourceRoot) {
+        this.sourceRoot = sourceRoot;
+    }
+
+    public String getMapRoot() {
+        return mapRoot;
+    }
+    
+    public void setMapRoot(String mapRoot) {
+        this.mapRoot = mapRoot;
     }
     
     public String getTscExecutable() {return tscExecutable;}
