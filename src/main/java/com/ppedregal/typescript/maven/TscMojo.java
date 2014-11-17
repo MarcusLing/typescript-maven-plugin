@@ -138,6 +138,13 @@ public class TscMojo extends AbstractMojo
     private boolean noImplicitAny = false;
     
     /**
+     * Generate corresponding '.d.ts' file.
+     *
+     * @parameter expression="${ts.declaration}"
+     */
+    private boolean declaration = false;
+    
+    /**
      * Set the executable command of tsc program.
      *
      * @parameter expression="${ts.tscExecutable}" default-value="tsc"
@@ -315,6 +322,10 @@ public class TscMojo extends AbstractMojo
     
     private List<String> optionArguments() {
         List<String> options = new ArrayList<String>();
+
+        if (declaration) {
+            options.add("--declaration");
+        }
         
         if (noStandardLib) {
             options.add("--nolib");
@@ -555,6 +566,14 @@ public class TscMojo extends AbstractMojo
     
     public void setNoImplicitAny(boolean noImplicitAny) {
         this.noImplicitAny = noImplicitAny;
+    }
+    
+    public boolean getDeclaration() {
+        return declaration;
+    }
+
+    public void setDeclaration(boolean declaration) {
+        this.declaration = declaration;
     }
     
     public String getTscExecutable() {return tscExecutable;}
