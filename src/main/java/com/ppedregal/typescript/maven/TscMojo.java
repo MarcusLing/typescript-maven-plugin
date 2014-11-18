@@ -104,9 +104,9 @@ public class TscMojo extends AbstractMojo
     /**
      * If set, the TypeScript files will be compiled into a single JavaScript file.
      *
-     * @parameter expression="${ts.targetFile}
+     * @parameter expression="${ts.out}
      */
-    private File targetFile;
+    private File out;
 
     /**
      * Set the target ECMAScript version for TypeScript compilation output.
@@ -217,7 +217,7 @@ public class TscMojo extends AbstractMojo
 
     private void doCompileFiles(boolean checkTimestamp) throws MojoExecutionException {
         Collection<File> files = FileUtils.listFiles(sourceDirectory, new String[] {"ts"}, true);
-        if (targetFile != null) {
+        if (out != null) {
             doCompileAllFiles(checkTimestamp, files);
         } else {
             doCompileSingleFiles(checkTimestamp, files);
@@ -231,7 +231,7 @@ public class TscMojo extends AbstractMojo
             }
             List<String> params = new ArrayList<String>();
             params.add("--out");
-            params.add(targetFile.getPath());
+            params.add(out.getPath());
 
             // find the latest modification among the source files
             // and add files to an ASCII file
@@ -250,7 +250,7 @@ public class TscMojo extends AbstractMojo
             // add the ASCII file as @<file> parameter
             params.add("@"+"modifiedFiles.txt");
 
-            if (!targetFile.exists() || !checkTimestamp || lastModified > targetFile.lastModified()) {
+            if (!out.exists() || !checkTimestamp || lastModified > out.lastModified()) {
                 try {
                     tsc(params.toArray(new String[] {}));
                 } catch (TscInvocationException e) {
@@ -556,11 +556,11 @@ public class TscMojo extends AbstractMojo
     }
 
     public File getTargetFile() {
-        return targetFile;
+        return out;
     }
     
     public void setTargetFile(File targetFile) {
-        this.targetFile = targetFile;
+        this.out = targetFile;
     }
     
     public String getEncoding() {
