@@ -24,6 +24,8 @@ TODO: publish this plugin to a repository.
         &lt;configuration&gt;
         	&lt;sourceDirectory&gt;src/main/ts&lt;/sourceDirectory&gt;
         	&lt;targetDirectory&gt;target/ts&lt;/targetDirectory&gt;
+            &lt;!-- Replace targetDirectory with 'out' to compile everything into one --&gt;
+            &lt;!-- file. 'out' should contain the name of the outout .js file. --&gt;
 
             &lt;!-- 'amd' or 'commonjs' --&gt;
         	&lt;module&gt;amd&lt;/module&gt;
