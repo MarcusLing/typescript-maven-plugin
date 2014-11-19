@@ -216,7 +216,16 @@ public class TscMojo extends AbstractMojo
     }
 
     private void doCompileFiles(boolean checkTimestamp) throws MojoExecutionException {
-        Collection<File> files = FileUtils.listFiles(sourceDirectory, new String[] {"ts"}, true);
+        Collection<File> allTsFiles = FileUtils.listFiles(sourceDirectory, new String[] {"ts"}, true);
+        
+        // Filter out .d.ts files. We don't need to compile these ones.
+        List<File> files = new ArrayList<File>(allTsFiles.size());
+        for (File f : allTsFiles) {
+            if ( ! f.getName().endsWith(".d.ts")) {
+                files.add(f);
+            }
+        }
+        
         if (out != null) {
             doCompileAllFiles(checkTimestamp, files);
         } else {
