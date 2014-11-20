@@ -1,5 +1,5 @@
 <h1>TypeScript Maven Plugin</h1>
-Maven plugin that integrates <a href="http://typescript.codeplex.com/">TypeScript</a> compiler into maven builds. Supports v1.1 of the TypeScript compiler and can use automatically use the Rhino JavaScript engine if the 'tsc' command is not available.
+Maven plugin that integrates <a href="http://typescript.codeplex.com/">TypeScript</a> compiler into maven builds. Supports v1.3 of the TypeScript compiler and can use automatically use the Rhino JavaScript engine if the 'tsc' command is not available.
 
 To use the plugin in maven you need to follow these steps:
 
