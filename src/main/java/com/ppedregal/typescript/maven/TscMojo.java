@@ -261,7 +261,7 @@ public class TscMojo extends AbstractMojo
 
             if (!out.exists() || !checkTimestamp || lastModified > out.lastModified()) {
                 try {
-                    tsc(params.toArray(new String[] {}));
+                    tsc(params);
                 } catch (TscInvocationException e) {
                     getLog().error(e.getMessage());
                     if (getLog().isDebugEnabled()) {
@@ -281,28 +281,29 @@ public class TscMojo extends AbstractMojo
             if (!watching) {
                 getLog().info("Searching directory " + sourceDirectory.getCanonicalPath());
             }
+            
+            List<String> args = new ArrayList<String>();
+            args.add("--outDir");
+            args.add(targetDirectory.getPath());
             for (File file : files) {
-                try {
-                    String sourcePath = file.getPath().substring(sourceDirectory.getPath().length());
-                    String targetPath = FilenameUtils.removeExtension(sourcePath) + ".js";
-                    File sourceFile = new File(sourceDirectory, sourcePath).getAbsoluteFile();
-                    File targetFile = new File(targetDirectory, targetPath).getAbsoluteFile();
-                    if (!targetFile.exists() || !checkTimestamp || sourceFile.lastModified() > targetFile.lastModified()) {
-                        String sourceFilePath = sourceFile.getPath();
-                        getLog().info(String.format("Compiling: %s", sourceFilePath));
-                        String generatePath = targetFile.getParentFile().getPath();
-                        tsc("--outDir", generatePath, sourceFilePath);
-                        getLog().info(String.format("Generated: %s", targetFile));
-                        compiledFiles++;
-                    }
-                } catch (TscInvocationException e) {
-                    getLog().error(e.getMessage());
-                    if (getLog().isDebugEnabled()) {
-                        getLog().debug(e);
-                    }
-                    throw new MojoExecutionException(e.getMessage(), e);
-                }
+                String sourcePath = file.getPath().substring(sourceDirectory.getPath().length());
+                File sourceFile = new File(sourceDirectory, sourcePath).getAbsoluteFile();
+                String sourceFilePath = sourceFile.getPath();
+                getLog().info(String.format("Compiling: %s", sourceFilePath));
+                args.add(sourceFilePath);
+                compiledFiles++;
             }
+            try {
+                tsc(args);
+            } catch (TscInvocationException e) {
+                getLog().error(e.getMessage());
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug(e);
+                }
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
+
+            
             if (compiledFiles == 0) {
                 getLog().info("Nothing to compile");
             } else {
@@ -395,7 +396,7 @@ public class TscMojo extends AbstractMojo
         return options;
     }    
         
-    private void tsc(String...args) throws TscInvocationException, MojoExecutionException {
+    private void tsc(List<String> args) throws TscInvocationException, MojoExecutionException {
         if (useTscBinary(args)) {
             return;
         }
@@ -465,7 +466,7 @@ public class TscMojo extends AbstractMojo
         return sb.toString();
     }
 
-    private boolean useTscBinary(String[] args) throws MojoExecutionException {
+    private boolean useTscBinary(List<String> args) throws MojoExecutionException {
         if (useTsc) {
 
             // lets try execute the 'tsc' executable directly
@@ -478,7 +479,7 @@ public class TscMojo extends AbstractMojo
                 arguments.add("tsc");
             }
             arguments.addAll(optionArguments());
-            arguments.addAll(Arrays.asList(args));
+            arguments.addAll(args);
             
             getLog().info("Using external nodejs to run command: " + stringListToString(arguments));
 
