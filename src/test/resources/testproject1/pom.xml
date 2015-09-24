@@ -18,6 +18,8 @@
         <configuration>
         	<sourceDirectory>src/main/ts</sourceDirectory>
         	<targetDirectory>target/ts</targetDirectory>
+        	<module>amd</module>
+        	<target>ES5</target>
         </configuration>        
       </plugin>
     </plugins>

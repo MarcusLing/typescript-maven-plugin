@@ -37,9 +37,10 @@ var Stats = (function(){
 })();
 
 exports.readFileSync=function(path,enc){
+        var hasEncoding = enc !== undefined;
 	enc=enc||process.encoding||"utf-8";
-	var f = javafile(path),
-		reader = new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(f),enc));
+	var f = javafile(path);
+	var reader = new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(f),enc));
 	try {
 		var buffer = new java.lang.StringBuffer(),
 			line;
@@ -53,14 +54,15 @@ exports.readFileSync=function(path,enc){
 		reader.close();
 	}
 	reader = null;
-	return {
-		"0":0,
-		"1":0,
-        length: buffer.length(),
-		toString:function(){
-			return new String(buffer.toString());
-		}
-	};
+        
+        return hasEncoding ? new String(buffer.toString()) : {
+          "0":0,
+          "1":0,
+          length: buffer.length(),
+          toString:function(){
+                  return new String(buffer.toString());
+          }
+          };
 };
 exports.writeFileSync=function(path,data,enc){
 //	log("writeFileSync",argv(arguments));

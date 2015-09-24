@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.mozilla.javascript.Context;
@@ -33,6 +32,7 @@ import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
+import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.commonjs.module.RequireBuilder;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
@@ -408,29 +408,31 @@ public class TscMojo extends AbstractMojo
             nodeScript.exec(ctx, globalScope);
             fileWedgeScript.exec(ctx, globalScope);
             
-            NativeObject proc = (NativeObject)globalScope.get("process");
-            NativeArray argv = (NativeArray)proc.get("argv");
+            NativeObject processObject = (NativeObject)globalScope.get("process");
+            NativeArray argv = (NativeArray)processObject.get("argv");
             argv.defineProperty("length", 0, ScriptableObject.EMPTY);
             int i = 0;
-            argv.put(i++, argv, "node");
-            argv.put(i++, argv, "tsc.js");
+            argv.put(i++, argv, javaStringToJsString(ctx, "node"));
+            argv.put(i++, argv, javaStringToJsString(ctx,"tsc.js"));
             
             for (String option : optionArguments()) {
-                argv.put(i++, argv, option);
+                argv.put(i++, argv, javaStringToJsString(ctx, option));
             }
 
             for (String s:args){
-                argv.put(i++, argv, s);
+                argv.put(i++, argv, javaStringToJsString(ctx, s));
             }
 
-            proc.defineProperty("encoding", encoding, ScriptableObject.READONLY);
+            processObject.defineProperty("encoding", javaStringToJsString(ctx, encoding), ScriptableObject.READONLY);
 
-            NativeObject mainModule = (NativeObject)proc.get("mainModule");
-            mainModule.defineProperty("filename", "___classloader_resource___/tsc.js", ScriptableObject.READONLY);
+            NativeObject mainModule = (NativeObject) processObject.get("mainModule");
+            
+            globalScope.defineProperty("__filename", javaStringToJsString(ctx, "___classloader_resource___/tsc.js"), ScriptableObject.READONLY);
+            mainModule.defineProperty("filename", javaStringToJsString(ctx, "___classloader_resource___/tsc.js"), ScriptableObject.READONLY);
             
             getLog().info("Using Rhino JS Engine to run command: " + nativeArrayToString(argv));
 
-            tscScript.exec(ctx,globalScope);
+            tscScript.exec(ctx, globalScope);
         } catch (JavaScriptException e){
             if (e.getValue() instanceof NativeJavaObject){
                 NativeJavaObject njo = (NativeJavaObject)e.getValue();
@@ -453,7 +455,12 @@ public class TscMojo extends AbstractMojo
             org.mozilla.javascript.Context.exit();
         }
     }
-    
+
+    Scriptable javaStringToJsString(Context ctx, String javaString) {
+        Object[] stringArgs = { javaString };
+        return ctx.newObject(globalScope, "String", stringArgs);
+    }    
+
     /**
      * Format a native array of strings into one space separated string.
      */

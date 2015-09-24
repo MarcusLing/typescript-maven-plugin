@@ -14,9 +14,9 @@ var process = {};
 		status = status || 0;
 		throw new com.ppedregal.typescript.maven.ProcessExit(status);
 	}
-    function cwd() {
-      return java.lang.System.getProperty("user.dir");      
-    }
+	function cwd() {
+		return new String(java.lang.System.getProperty("user.dir"));
+	}
 	process = {
 		stdout: {
 			write:function(o){
@@ -25,9 +25,9 @@ var process = {};
 			writeln:function(o){
 				println(java.lang.System.out,o);
 			},
-            on: function(event, callback) {
-                // Graciously ignoring event
-            }
+			on: function(event, callback) {
+				// Graciously ignoring event
+			}
 		},
 		stderr: {
 			write:function(o){
@@ -36,10 +36,12 @@ var process = {};
 			writeln:function(o){
 				println(java.lang.System.err,o);
 			},
-            on: function(event, callback) {
-                // Graciously ignoring event
-            }
-        },
+			on: function(event, callback) {
+				// Graciously ignoring event
+			}
+		},
+		browser: false,
+		nextTick: function() { },	// extra stuff to trick tsc into thinking this is Node.
 		platform: platform(),
 		argv:[],
 		exit: exit,
@@ -103,27 +105,26 @@ var setTimeout,
            timer.schedule(ids[id],delay);
            return id;
         */
-    }
+    };
 
     clearTimeout = function (id) {
         ids[id].cancel();
         timer.purge();
         delete ids[id];
-    }
+    };
 
     setInterval = function (fn,delay) {
         var id = counter++;
         ids[id] = new JavaAdapter(java.util.TimerTask,{run: fn});
         timer.schedule(ids[id],delay,delay);
         return id;
-    }
+    };
 
     clearInterval = clearTimeout;
 
-})()
-
+})();
 
 function Buffer(data, encoding) {
-    this.data = data
-    this.encoding = encoding
+    this.data = data;
+    this.encoding = encoding;
 }
