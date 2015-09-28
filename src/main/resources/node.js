@@ -19,9 +19,13 @@ var process = {};
 	}
 	process = {
 		stdout: {
-			write:function(o){
-				print(java.lang.System.out,o);
-			},
+      write:function(o){
+        if (o instanceof Buffer) {
+          print(java.lang.System.out, o.data);
+        } else {
+          print(java.lang.System.out, o);
+        }
+      },
 			writeln:function(o){
 				println(java.lang.System.out,o);
 			},
