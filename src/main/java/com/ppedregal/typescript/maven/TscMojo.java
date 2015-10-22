@@ -16,12 +16,16 @@ package com.ppedregal.typescript.maven;
  * limitations under the License.
  */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -51,14 +55,20 @@ public class TscMojo extends AbstractMojo
      * @parameter expression="${ts.targetDirectory}" default-value="target/ts"
      * @required
      */
-    private File targetDirectory;
+    private File targetDirectory = null;
 
     /**
      * Source directory for .ts source files
      * @parameter expression="${ts.sourceDirectory}" default-value="src/main/ts"
      */
-    private File sourceDirectory;
+    private File sourceDirectory = null;
 
+    /**
+     * 
+     * @parameter expression="${ts.project}"
+     */
+    private File project = null;
+    
     /**
      * Encoding for files
      * @parameter expression="${project.build.sourceEncoding}
@@ -181,16 +191,30 @@ public class TscMojo extends AbstractMojo
     private boolean watching;
 
     public void execute() throws MojoExecutionException {
-        sourceDirectory.mkdirs();
-        targetDirectory.mkdirs();
-
         try {
             compileScripts();
         } catch (IOException e) {
             throw createMojoExecutionException(e);
         }
+        
+        if (project == null) {
+            if (targetDirectory == null) {
+                targetDirectory = new File("target/ts");
+            }
+            if (sourceDirectory == null) {
+                sourceDirectory = new File("src/main/ts");
+            }
 
-        doCompileFiles(false);
+            sourceDirectory.mkdirs();
+            targetDirectory.mkdirs();
+            
+            doCompileFiles(false);
+
+        } else {
+            
+            // Use the tsconfig.json.
+            doCompileTsConfig();
+        }
 
         if (watch) {
             watching = true;
@@ -229,7 +253,7 @@ public class TscMojo extends AbstractMojo
         if (out != null) {
             doCompileAllFiles(checkTimestamp, files);
         } else {
-            doCompileSingleFiles(checkTimestamp, files);
+            doCompileSingleFiles(files);
         }
     }
 
@@ -239,6 +263,7 @@ public class TscMojo extends AbstractMojo
                 getLog().info("Searching directory " + sourceDirectory.getCanonicalPath());
             }
             List<String> params = new ArrayList<String>();
+            params.addAll(optionArguments());
             params.add("--out");
             params.add(out.getPath());
 
@@ -260,7 +285,7 @@ public class TscMojo extends AbstractMojo
             params.add("@"+"modifiedFiles.txt");
 
             if (!out.exists() || !checkTimestamp || lastModified > out.lastModified()) {
-                try {
+                try {                    
                     tsc(params);
                 } catch (TscInvocationException e) {
                     getLog().error(e.getMessage());
@@ -274,7 +299,7 @@ public class TscMojo extends AbstractMojo
         }
     }
 
-    private void doCompileSingleFiles(boolean checkTimestamp, Collection<File> files)
+    private void doCompileSingleFiles(Collection<File> files)
             throws MojoExecutionException {
         try {
             int compiledFiles = 0;
@@ -283,6 +308,7 @@ public class TscMojo extends AbstractMojo
             }
             
             List<String> args = new ArrayList<String>();
+            args.addAll(optionArguments());
             args.add("--outDir");
             args.add(targetDirectory.getPath());
             for (File file : files) {
@@ -302,7 +328,6 @@ public class TscMojo extends AbstractMojo
                 }
                 throw new MojoExecutionException(e.getMessage(), e);
             }
-
             
             if (compiledFiles == 0) {
                 getLog().info("Nothing to compile");
@@ -311,6 +336,22 @@ public class TscMojo extends AbstractMojo
             }
         } catch (IOException e) {
             throw createMojoExecutionException(e);
+        }
+    }
+    
+    private void doCompileTsConfig() throws MojoExecutionException {
+        List<String> args = new ArrayList<String>();
+        args.add("--project");
+        args.add(project.getAbsolutePath());
+
+        try {
+            tsc(args);
+        } catch (TscInvocationException e) {
+            getLog().error(e.getMessage());
+            if (getLog().isDebugEnabled()) {
+                getLog().debug(e);
+            }
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
@@ -414,10 +455,6 @@ public class TscMojo extends AbstractMojo
             int i = 0;
             argv.put(i++, argv, javaStringToJsString(ctx, "node"));
             argv.put(i++, argv, javaStringToJsString(ctx,"tsc.js"));
-            
-            for (String option : optionArguments()) {
-                argv.put(i++, argv, javaStringToJsString(ctx, option));
-            }
 
             for (String s:args){
                 argv.put(i++, argv, javaStringToJsString(ctx, s));
