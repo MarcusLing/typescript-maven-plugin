@@ -4,7 +4,7 @@
 
   <groupId>com.simonzone.typescript</groupId>
   <artifactId>typescript-maven-plugin</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>typescript-maven-plugin Maven Plugin</name>
