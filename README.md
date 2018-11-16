@@ -3,6 +3,10 @@ Maven plugin that integrates <a href="http://www.typescriptlang.org/">TypeScript
 
 To use the plugin in maven you need to follow these steps:
 
+0.1) build using maven
+```
+mvn install -DskipTests
+```
 
 
 ~~1) Add the following plugin repository to your pom.xml~~
@@ -14,6 +18,7 @@ TODO: publish this plugin to a repository. In the mean time you should just clon
   &lt;url&gt;https://raw.github.com/ppedregal/typescript-maven-plugin/master/repo&lt;/url&gt;
 &lt;/pluginRepository&gt;
 </pre>
+
 
 2) There are two ways of using the plugin. The old way where you specify all of the compiler options in the plugin, and the new way where you just point the plugin at an `tsconfig.json` file.
 
